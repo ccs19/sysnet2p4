@@ -3,7 +3,7 @@
  * Systems and Networks II
  * Project 4
  * Christopher Schneider & Brett Rowberry
- * This file contains definitions common the the rdtSender, rdtReceiver, and network.
+ * This file implementations of functions common to the rdtSender, rdtReceiver, and network.
  */
 
 #include <stdio.h>

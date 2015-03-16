@@ -3,7 +3,7 @@
  * Systems and Networks II
  * Project 4
  * Christopher Schneider & Brett Rowberry
- * This file contains definitions common the the rdtSender, rdtReceiver, and network.
+ * This file contains definitions common to the rdtSender, rdtReceiver, and network.
  */
 
 #ifndef _SYSNET2P4_COMMONDEFINITIONS_H_
@@ -17,7 +17,7 @@ int SEGMENT_SIZE = 10;
 /*
  * Maximum length of a hostname
  */
-int MAX_HOSTNAME_LENGTH = 30;
+int MAX_HOSTNAME_LENGTH = 256;
 
 /*
  * Checks if given port is a legal port number. Returns 1 if valid, 0 if invalid.
