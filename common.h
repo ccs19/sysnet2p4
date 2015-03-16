@@ -28,4 +28,13 @@ int MAX_HOSTNAME_LENGTH = 256;
  */
 int isValidPort(int port);
 
+/*
+ * Checks if given port is valid percentage. Returns 1 if valid, 0 if invalid.
+ *
+ * percentage - input percentage
+ *
+ * return int
+ */
+int isValidPercentage(int percentage);
+
 #endif //_SYSNET2P4_COMMONDEFINITIONS_H_

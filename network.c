@@ -11,16 +11,19 @@
 #include "common.h"
 
 //Function prototypes
-void getCommandLineArgs(int numberOfArgs, const char * args[]);
+void checkCommandLineArgs(int numberOfArgs);
+int getReceivingPort(const char * portString);
 
 int main(int argc, const char* argv[])
 {
-    char receivingHostname[MAX_HOSTNAME_LENGTH];
-    int receivingPort;
-    int lostPercent;
-    int delayedPercent;
-    int errorPercent;
+    checkCommandLineArgs(argc);
 
+    char receivingHostname[MAX_HOSTNAME_LENGTH];
+
+    int receivingPort = getReceivingPort(argv[2]);
+    int lostPercent = getPercent(argv[3]);
+    int delayedPercent = getPercent(argv[4]);
+    int errorPercent = getPercent(argv[5]);
 
     //The Proxy also simulates slow packet transport within the network by delaying
     // transport of a packet to its destination using a fixed time delay. This time
@@ -73,10 +76,19 @@ void checkCommandLineArgs(int numberOfArgs)
     }
 }
 
-int getReceivingPort(char * portString)
+int getReceivingPort(const char * portString)
 {
     int port = atoi(portString);
     if( !isValidPort(port) ) exit(1);
-    printf("Proxy Port = %d\n", port);
+    printf("Receiving Port = %d\n", port);
+    return port;
+}
+
+int getPercent(const char * percentString)
+{
+    int percent = atoi(percentString);
+    if( !isValidPercentage(percent) ) exit(1);
+    printf("Percent = %d\n", percent);
+    return percent;
 }
 

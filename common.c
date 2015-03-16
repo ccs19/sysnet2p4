@@ -22,7 +22,23 @@ int isValidPort(int port)
         printf("Invalid port number.\n");
         return 0;
     }
+    return 1;
+}
 
+/*
+ * Checks if given port is valid percentage. Returns 1 if valid, 0 if invalid.
+ *
+ * percentage - input percentage
+ *
+ * return int
+ */
+int isValidPercentage(int percentage)
+{
+    if(percentage < 0 || percentage > 100)
+    {
+        printf("Invalid percentage.\n");
+        return 0;
+    }
     return 1;
 }
 

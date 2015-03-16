@@ -18,7 +18,6 @@
 //Function prototypes
 int validatePort(int numberOfArgs, const char *proxyPortString, const char *programName);
 
-
 int main(int argc, const char* argv[])
 {
     int                sockfd;
