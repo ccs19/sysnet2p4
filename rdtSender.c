@@ -17,15 +17,9 @@
 
 int main(int argc, const char* argv[])
 {
-    char userInput[MAX_HOSTNAME_LENGTH];
-    fgets(userInput, MAX_HOSTNAME_LENGTH, stdin);
-    printf("%s", userInput);
-
-
-
-
-
-
+//    char userInput[MAX_HOSTNAME_LENGTH];
+//    fgets(userInput, MAX_HOSTNAME_LENGTH, stdin);
+//    printf("%s", userInput);
 
     int                sockfd;
     struct sockaddr_in servaddr;
