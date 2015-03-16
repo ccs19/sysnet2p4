@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -Wall
-SENDER_OBJECTS = sender.c
-RECEIVER_OBJECTS = receiver.c
+SENDER_OBJECTS = rdtSender.c
+RECEIVER_OBJECTS = rdtReceiver.c
 NETWORK_OBJECTS = network.c
 SENDER_NAME = sender
 RECEIVER_NAME = receiver

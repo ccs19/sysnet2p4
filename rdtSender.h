@@ -21,4 +21,3 @@
 int sendMessage (char* desthost, int destPort, char* message);
 
 #endif _RDT_SEND_H
-

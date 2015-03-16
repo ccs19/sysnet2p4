@@ -1,3 +1,5 @@
+#include "rdtReceiver.h"
+
 int main()
 {
     //seq and ack numbers 1 or 0
