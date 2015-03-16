@@ -169,7 +169,7 @@ void AcceptConnections()
     DisplayInfo();
     printf("Waiting for connection... ");
     fflush(stdout);
-    while(true)
+    while(1)
     {
         HandleClientRequests(&clientAddress);
     }
