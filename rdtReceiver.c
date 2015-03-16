@@ -6,35 +6,41 @@
  * This file implements the functions used by the RDT receiver.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 
-#include <netdb.h> //For gethostbyname()
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <unistd.h>
-#include <AddressBook/AddressBook.h>
-#include <string.h> //for memset
+
+
 #include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 #include "rdtReceiver.h"
 #include "common.h"
 
+//Globals
+int ServerSocket = 0;
+struct hostent * HostByName = NULL;
+struct sockaddr_in ServerAddress;
+
 //Function prototypes
-int getAndPrintPort(int numberOfArgs, const char *inputString);
-void OpenSocket(int port, int * socketFD, struct sockaddr_in * address, struct hostent * hostByName);
-void InitAddressStruct(int port, struct sockaddr_in * address, struct hostent * hostByName);
-void BindSocket(int socket, struct sockaddr_in * address);
+int validateAndPrintPort(int numberOfArgs, const char * nameOfProgram, const char * portString);
 void ExitOnError(char * errorMessage);
+void BindSocket();
+void OpenSocket(int port);
+void InitAddressStruct(int port);
+void DisplayServerInfo();
 
 int main(int argc, const char* argv[])
 {
-    int port = getAndPrintPort(argc, argv[1]);
-    int socketFD = 0;
-    struct hostent * hostByName = NULL;
-    struct sockaddr_in * address = (struct sockaddr_in *)malloc(sizeof(address));
+    unsigned int port = validateAndPrintPort(argc, argv[0], argv[1]);
+//    if(port == -1) exit(1);
 
-    OpenSocket(port, &socketFD, address, hostByName);
+    OpenSocket(port);
 
 //    char message[SEGMENT_SIZE];
 //    sprintf(message, "%s", receiveMessage(socketFD));
@@ -48,22 +54,22 @@ int main(int argc, const char* argv[])
 }
 
 /*
- * Checks that a command line argument is a valid integer port number. If valid, it is printed and returned.
- * Otherwise, the program exits.
+ * Checks that string is a valid integer port number. If valid, it is printed and returned.
+ * Otherwise, returns -1.
  *
  * numberOfArgs    - number of command line args
  * inputString     - hopefully, a valid integer port number
  */
-int getAndPrintPort(int numberOfArgs, const char *inputString)
+int validateAndPrintPort(int numberOfArgs, const char *nameOfProgram, const char * portString)
 {
     if (numberOfArgs != 2)
     {
-        printf("Usage: ./receiver <port number>\n");
-        exit(1);
+        printf("Usage: %s <port number>\n", nameOfProgram);
+        return -1;
     }
 
-    int portNumber = atoi(inputString);
-    if( !isValidPort(portNumber) ) exit(1);
+    int portNumber = atoi(portString);
+    if( !isValidPort(portNumber) ) return -1;
     printf("Port = %d\n", portNumber);
     return portNumber;
 }
@@ -75,23 +81,23 @@ int getAndPrintPort(int numberOfArgs, const char *inputString)
     @return                -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void OpenSocket(int port, int * socketFD, struct sockaddr_in * address, struct hostent * hostByName)
+void OpenSocket(int port)
 {
     char hostname[MAX_HOSTNAME_LENGTH];
 
-    if( ( *socketFD =  socket(PF_INET, SOCK_DGRAM, 0) ) <  0)  //If socket fails
+    if( ( ServerSocket =  socket(PF_INET, SOCK_DGRAM, 0) ) <  0)  //If socket fails
         ExitOnError("Error creating socket");
 
     if(gethostname(hostname, sizeof(hostname)) < 0)               //If getting hostname fails
         ExitOnError("Error acquiring hostname. Exiting");
 
-    if( ( hostByName = gethostbyname(hostname) ) ==  NULL)        //If gethostbyname fails print error message, exit
+    if( ( HostByName = gethostbyname(hostname) ) ==  NULL)        //If gethostbyname fails print error message, exit
     {
         herror("GetHostByName failed. Error: ");
         exit(1);
     }
-    InitAddressStruct(port, address, hostByName);
-    BindSocket(*socketFD, address);
+    InitAddressStruct(port);
+    BindSocket();
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -101,12 +107,12 @@ void OpenSocket(int port, int * socketFD, struct sockaddr_in * address, struct h
     @return                --  void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void InitAddressStruct(int port, struct sockaddr_in * address, struct hostent * hostByName)
+void InitAddressStruct(int port)
 {
-//    memset((void*)&address, '0', (size_t)sizeof(address));
-    address->sin_family = AF_INET;
-    memcpy( (void *)&address->sin_addr, (void *)hostByName->h_addr, hostByName->h_length);
-    address->sin_port = htons(port);
+    memset((void*)&ServerAddress, '0', (size_t)sizeof(ServerAddress));
+    ServerAddress.sin_family = AF_INET;
+    memcpy( (void *)&ServerAddress.sin_addr, (void *)HostByName->h_addr, HostByName->h_length);
+    ServerAddress.sin_port = htons(port);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -115,9 +121,9 @@ void InitAddressStruct(int port, struct sockaddr_in * address, struct hostent * 
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void BindSocket(int socket, struct sockaddr_in * address)
+void BindSocket()
 {
-    if( ( bind( socket, (struct sockaddr *) &address, (socklen_t)sizeof(address)) )  < 0)
+    if( ( bind( ServerSocket, (struct sockaddr *) &ServerAddress, sizeof(ServerAddress)) )  < 0)
         ExitOnError("Failed to bind socket"); //If binding of socket fails
 }
 
@@ -128,7 +134,7 @@ void BindSocket(int socket, struct sockaddr_in * address)
     @return                        -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void ExitOnError(char * errorMessage)
+void ExitOnError(char* errorMessage)
 {
     printf("%s\n", errorMessage);
     exit(1);

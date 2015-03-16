@@ -13,14 +13,14 @@
 
 int main(int argc, const char* argv[])
 {
-    //when the sender is executed, the host name and port number of the proxy
-    // should be passed in as parameters to main()
+    char userInput[MAX_HOSTNAME_LENGTH];
+    fgets(userInput, MAX_HOSTNAME_LENGTH, stdin);
+    printf("%s", userInput);
 
     //wait for :
     // data to send - keyboard input
     // timer to go off - handle timer event and arrival of ack with select() system call
     // acks from network
-    //segment size if 10B
 
     return 0;
 }
@@ -32,7 +32,7 @@ int main(int argc, const char* argv[])
  * numberOfArgs    - number of command line args
  * inputString     - hopefully, a valid integer port number
  */
-int getAndPrintPort(int numberOfArgs, const char * proxyHostnameString, const char *proxyPortString)
+int validateAndPrintPort(int numberOfArgs, const char *proxyHostnameString, const char *proxyPortString)
 {
     if (numberOfArgs != 3)
     {
