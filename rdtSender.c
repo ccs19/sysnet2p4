@@ -10,6 +10,8 @@
 
 int main()
 {
+    //when the sender is executed, the host name and port number of the proxy
+    // should be passed in as parameters to main()
 
     //wait for :
     // data to send - keyboard input
