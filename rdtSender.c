@@ -6,6 +6,8 @@
  * This file implements the functions used by the RDT sender.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "rdtSender.h"
 
 int main(int argc, const char* argv[])
@@ -20,6 +22,60 @@ int main(int argc, const char* argv[])
     //segment size if 10B
 
     return 0;
+}
+
+/*
+ * Checks that a command line argument is a valid integer port number. If valid, it is printed and returned.
+ * Otherwise, the program exits.
+ *
+ * numberOfArgs    - number of command line args
+ * inputString     - hopefully, a valid integer port number
+ */
+int getAndPrintPort(int numberOfArgs, const char * proxyHostnameString, const char *proxyPortString)
+{
+    if (numberOfArgs != 3)
+    {
+        printf("Usage: ./sender <proxyHostname> <proxyPort>\n");
+        exit(1);
+    }
+
+    int proxyPort = atoi(proxyPortString);
+
+    if(proxyPort < 0 || proxyPort > 65535)
+    {
+        printf("Invalid port number.\n");
+        exit(1);
+    }
+
+    printf("Proxy Port = %d\n", proxyPort);
+    return proxyPort;
+}
+
+/*
+ * Checks that a command line argument is a valid integer port number. If valid, it is printed and returned.
+ * Otherwise, the program exits.
+ *
+ * numberOfArgs    - number of command line args
+ * inputString     - hopefully, a valid integer port number
+ */
+int getAndPrintHostName(int numberOfArgs, const char * proxyHostnameString, const char *proxyPortString)
+{
+    if (numberOfArgs != 3)
+    {
+        printf("Usage: ./sender <proxyHostname> <proxyPort>\n");
+        exit(1);
+    }
+
+    int portPort = atoi(proxyPortString);
+
+    if(portPort < 0 || portPort > 65535)
+    {
+        printf("Invalid port number.\n");
+        exit(1);
+    }
+
+    printf("Proxy Port = %d\n", portPort);
+    return portPort;
 }
 
 /*

@@ -11,12 +11,15 @@
 #include "rdtReceiver.h"
 #include "commondefinitions.h"
 
+//Function prototypes
+int getAndPrintPort(int numberOfArgs, const char *inputString);
+
+
 int main(int argc, const char* argv[])
 {
-    int port = atoi(argv[1]);
-    printf("Port = %d\n", port);
+    int port = getAndPrintPort(argc, argv[1]);
 
-    int socketFD =5;
+    int socketFD = 5;
 
     char message[SEGMENT_SIZE];
     sprintf(message, "%s", receiveMessage(socketFD));
@@ -27,6 +30,33 @@ int main(int argc, const char* argv[])
     //segment size if 10B
 
     return 0;
+}
+
+/*
+ * Checks that a command line argument is a valid integer port number. If valid, it is printed and returned.
+ * Otherwise, the program exits.
+ *
+ * numberOfArgs    - number of command line args
+ * inputString     - hopefully, a valid integer port number
+ */
+int getAndPrintPort(int numberOfArgs, const char *inputString)
+{
+    if (numberOfArgs != 2)
+    {
+        printf("Usage: ./receiver <port number>\n");
+        exit(1);
+    }
+
+    int portNumber = atoi(inputString);
+
+    if(portNumber < 0 || portNumber > 65535)
+    {
+        printf("Invalid port number.\n");
+        exit(1);
+    }
+
+    printf("Port = %d\n", portNumber);
+    return portNumber;
 }
 
 /*
