@@ -6,8 +6,21 @@
  * This file implements the proxy network.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "common.h"
+
+//Function prototypes
+void getCommandLineArgs(int numberOfArgs, const char * args[]);
+
 int main(int argc, const char* argv[])
 {
+    char receivingHostname[MAX_HOSTNAME_LENGTH];
+    int receivingPort;
+    int lostPercent;
+    int delayedPercent;
+    int errorPercent;
+
 
     //The Proxy also simulates slow packet transport within the network by delaying
     // transport of a packet to its destination using a fixed time delay. This time
@@ -42,5 +55,28 @@ int main(int argc, const char* argv[])
     //read select() man page and on eLearning
 
     return 0;
+}
+
+/*
+ * Checks that a command line argument is a valid integer port number. If valid, it is printed and returned.
+ * Otherwise, the program exits.
+ *
+ * numberOfArgs    - number of command line args
+ * inputString     - hopefully, a valid integer port number
+ */
+void checkCommandLineArgs(int numberOfArgs)
+{
+    if (numberOfArgs != 6)
+    {
+        printf("Usage: ./proxy <rcvHostname> <rcvPort> <lostPercent> <delayedPercent> <errorPercent>\n");
+        exit(1);
+    }
+}
+
+int getReceivingPort(char * portString)
+{
+    int port = atoi(portString);
+    if( !isValidPort(port) ) exit(1);
+    printf("Proxy Port = %d\n", port);
 }
 

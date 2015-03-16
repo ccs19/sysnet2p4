@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -g -Wall
-SENDER_OBJECTS = rdtSender.c
-RECEIVER_OBJECTS = rdtReceiver.c
-NETWORK_OBJECTS = network.c
+SENDER_OBJECTS = rdtSender.c common.c
+RECEIVER_OBJECTS = rdtReceiver.c common.c
+NETWORK_OBJECTS = network.c common.c
 SENDER_NAME = sender
 RECEIVER_NAME = receiver
 NETWORK_NAME = proxy

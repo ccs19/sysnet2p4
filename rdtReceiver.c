@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rdtReceiver.h"
-#include "commondefinitions.h"
+#include "common.h"
 
 //Function prototypes
 int getAndPrintPort(int numberOfArgs, const char *inputString);
@@ -48,13 +48,7 @@ int getAndPrintPort(int numberOfArgs, const char *inputString)
     }
 
     int portNumber = atoi(inputString);
-
-    if(portNumber < 0 || portNumber > 65535)
-    {
-        printf("Invalid port number.\n");
-        exit(1);
-    }
-
+    if( !isValidPort(portNumber) ) exit(1);
     printf("Port = %d\n", portNumber);
     return portNumber;
 }

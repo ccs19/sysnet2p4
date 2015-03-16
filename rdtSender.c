@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rdtSender.h"
+#include "common.h"
 
 int main(int argc, const char* argv[])
 {
@@ -41,11 +42,7 @@ int getAndPrintPort(int numberOfArgs, const char * proxyHostnameString, const ch
 
     int proxyPort = atoi(proxyPortString);
 
-    if(proxyPort < 0 || proxyPort > 65535)
-    {
-        printf("Invalid port number.\n");
-        exit(1);
-    }
+    if( !isValidPort(proxyPort) ) exit(1);
 
     printf("Proxy Port = %d\n", proxyPort);
     return proxyPort;
