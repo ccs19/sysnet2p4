@@ -22,5 +22,9 @@ int delayPacket(int percentChance);
 
 int errorPacket(int percentChance);
 
+void initRandom();
+
+int getRandom();
+
 
 #endif
