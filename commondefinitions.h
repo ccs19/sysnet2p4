@@ -1,0 +1,10 @@
+//
+// Created by Brett Rowberry on 3/16/15.
+//
+
+#ifndef _SYSNET2P4_COMMONDEFINITIONS_H_
+#define _SYSNET2P4_COMMONDEFINITIONS_H_
+
+int SEGMENT_SIZE = 10;
+
+#endif //_SYSNET2P4_COMMONDEFINITIONS_H_
