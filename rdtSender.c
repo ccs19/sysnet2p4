@@ -8,7 +8,7 @@
 
 #include "rdtSender.h"
 
-int main()
+int main(int argc, const char* argv[])
 {
     //when the sender is executed, the host name and port number of the proxy
     // should be passed in as parameters to main()

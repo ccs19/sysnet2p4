@@ -5,7 +5,7 @@ RECEIVER_OBJECTS = rdtReceiver.c
 NETWORK_OBJECTS = network.c
 SENDER_NAME = sender
 RECEIVER_NAME = receiver
-NETWORK_NAME = network
+NETWORK_NAME = proxy
 TODELETE = $(SENDER_NAME) $(RECEIVER_NAME) $(NETWORK_NAME) *.o
 LIBS = -pthread
 

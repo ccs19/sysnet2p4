@@ -19,4 +19,4 @@
 char* receiveMessage (int sockFD);
 
 
-#endif
+#endif //_RDT_RECEIVER_H

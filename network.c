@@ -6,7 +6,7 @@
  * This file implements the proxy network.
  */
 
-int main()
+int main(int argc, const char* argv[])
 {
 
     //The Proxy also simulates slow packet transport within the network by delaying

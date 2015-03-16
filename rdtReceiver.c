@@ -6,10 +6,20 @@
  * This file implements the functions used by the RDT receiver.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "rdtReceiver.h"
+#include "commondefinitions.h"
 
-int main()
+int main(int argc, const char* argv[])
 {
+    int port = atoi(argv[1]);
+    printf("Port = %d\n", port);
+
+    int socketFD =5;
+
+    char message[SEGMENT_SIZE];
+    sprintf(message, "%s", receiveMessage(socketFD));
     //bind socket to a user-specified port and print the port number on the screen
     //seq and ack numbers 1 or 0
     //buffering only required for last message
@@ -26,7 +36,7 @@ int main()
  *
  * returns the text message received by a sender or NULL if an error occurred
  */
-char* receiveMessage (int sockFD)
+char * receiveMessage (int sockFD)
 {
-
+    return NULL;
 }
