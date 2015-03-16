@@ -53,7 +53,7 @@ int main(int argc, const char* argv[])
 //    if(port == -1) exit(1);
 
     OpenSocket(port);
-
+    AcceptConnections();
 
 
 //    char message[SEGMENT_SIZE];
