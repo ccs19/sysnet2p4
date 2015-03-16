@@ -29,7 +29,7 @@
  *
  * return value - the socket identifier or a negative number indicating the error if a connection could not be established
  */
-int createSocket(char*, int, struct sockaddr_in *);
+int createSocket(const char*, int, struct sockaddr_in *);
 
 /*
  * Sends a request for service to the server. This is an asynchronous call to the server,

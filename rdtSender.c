@@ -21,6 +21,59 @@ int main(int argc, const char* argv[])
     fgets(userInput, MAX_HOSTNAME_LENGTH, stdin);
     printf("%s", userInput);
 
+
+
+
+
+
+
+    int                sockfd;
+    struct sockaddr_in servaddr;
+    char               response[256];
+    char               message[256];
+
+    if (argc != 3) {
+        fprintf (stderr, "Usage: client <hostname> <portnum>\n");
+        exit (1);
+    }
+
+    // parse input parameter for port information
+    int portNum = atoi (argv[2]);
+
+    // create a streaming socket
+    sockfd = createSocket(argv[1], portNum, &servaddr);
+    if (sockfd < 0) {
+        exit (1);
+    }
+
+    printf ("Enter a message: ");
+    fflush(stdout);
+    fgets (message, 256, stdin);
+    // replace new line with null character
+    message[strlen(message)-1] = '\0';
+
+    // send request to server
+    //if (sendRequest (sockfd, "<echo>Hello, World!</echo>", &servaddr) < 0) {
+    if (sendRequest (sockfd, message, &servaddr) < 0) {
+        closeSocket (sockfd);
+        exit (1);
+    }
+
+    if (receiveResponse(sockfd, response, 256) < 0) {
+        closeSocket (sockfd);
+        exit (1);
+    }
+    closeSocket (sockfd);
+
+    // display response from server
+    printResponse(response);
+
+    exit(0);
+
+
+
+
+
     //wait for :
     // data to send - keyboard input
     // timer to go off - handle timer event and arrival of ack with select() system call
@@ -103,7 +156,7 @@ int sendMessage (char* desthost, int destPort, char* message)
  *
  * return value - the socket identifier or a negative number indicating the error if a connection could not be established
  */
-int createSocket(char * serverName, int port, struct sockaddr_in * dest)
+int createSocket(const char * serverName, int port, struct sockaddr_in * dest)
 {
     /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
     int socketFD;
