@@ -15,45 +15,36 @@
 #include <netdb.h>
 #include "sender.h"
 
+//Function prototypes
+int validatePort(int numberOfArgs, const char *proxyPortString, const char *programName);
+
+
 int main(int argc, const char* argv[])
 {
-//    char userInput[MAX_HOSTNAME_LENGTH];
-//    fgets(userInput, MAX_HOSTNAME_LENGTH, stdin);
-//    printf("%s", userInput);
-
     int                sockfd;
     struct sockaddr_in servaddr;
-    char               response[256];
-    char               message[256];
+    char               response[SEGMENT_SIZE];
+    char               message[SEGMENT_SIZE];
 
-    if (argc != 3) {
-        fprintf (stderr, "Usage: client <hostname> <portnum>\n");
-        exit (1);
-    }
+    int portNum = validatePort(argc, argv[2], argv[0]);
 
-    // parse input parameter for port information
-    int portNum = atoi (argv[2]);
-
-    // create a streaming socket
     sockfd = createSocket(argv[1], portNum, &servaddr);
-    if (sockfd < 0) {
-        exit (1);
-    }
+    if (sockfd < 0) exit (1);
 
     printf ("Enter a message: ");
     fflush(stdout);
-    fgets (message, 256, stdin);
+    fgets (message, SEGMENT_SIZE, stdin);
     // replace new line with null character
     message[strlen(message)-1] = '\0';
 
-    // send request to server
-    //if (sendRequest (sockfd, "<echo>Hello, World!</echo>", &servaddr) < 0) {
-    if (sendRequest (sockfd, message, &servaddr) < 0) {
+    if (sendRequest (sockfd, message, &servaddr) < 0)
+    {
         closeSocket (sockfd);
         exit (1);
     }
 
-    if (receiveResponse(sockfd, response, 256) < 0) {
+    if (receiveResponse(sockfd, response, SEGMENT_SIZE) < 0)
+    {
         closeSocket (sockfd);
         exit (1);
     }
@@ -62,11 +53,7 @@ int main(int argc, const char* argv[])
     // display response from server
     printResponse(response);
 
-    exit(0);
-
-
-
-
+//    exit(0);
 
     //wait for :
     // data to send - keyboard input
@@ -83,11 +70,11 @@ int main(int argc, const char* argv[])
  * numberOfArgs    - number of command line args
  * inputString     - hopefully, a valid integer port number
  */
-int validateAndPrintPort(int numberOfArgs, const char *proxyHostnameString, const char *proxyPortString)
+int validatePort(int numberOfArgs, const char *proxyPortString, const char *programName)
 {
     if (numberOfArgs != 3)
     {
-        printf("Usage: ./sender <proxyHostname> <proxyPort>\n");
+        printf("Usage: %s <proxyHostname> <proxyPort>\n", programName);
         exit(1);
     }
 
@@ -95,7 +82,6 @@ int validateAndPrintPort(int numberOfArgs, const char *proxyHostnameString, cons
 
     if( !isValidPort(proxyPort) ) exit(1);
 
-    printf("Proxy Port = %d\n", proxyPort);
     return proxyPort;
 }
 

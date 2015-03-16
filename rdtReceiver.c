@@ -55,7 +55,6 @@ int main(int argc, const char* argv[])
     OpenSocket(port);
     AcceptConnections();
 
-
 //    char message[SEGMENT_SIZE];
 //    sprintf(message, "%s", receiveMessage(socketFD));
     //bind socket to a user-specified port and print the port number on the screen
