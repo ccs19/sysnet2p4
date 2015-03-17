@@ -19,4 +19,25 @@
 char* receiveMessage (int sockFD);
 
 
+//Other function prototypes
+
+//Returns success or failure
+//Checks if corrupt, returns success or failure
+int udtReceive(int expectedSequence);
+
+//Throws away first byte, returns data
+byte* extractData(byte* packet);
+
+//Adds data to a buffer. Need more params
+void reassemble(byte* packet);
+
+//Makes and returns the ack packet
+byte* ackPacket(int ackNum, char* data, int byteCount);
+
+//Sends the ack back
+int udtSend(byte* ackPacket);
+
+
+
+
 #endif //_RDT_RECEIVER_H

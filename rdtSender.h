@@ -20,4 +20,26 @@
  */
 int sendMessage (char* desthost, int destPort, char* message);
 
+
+
+//Other function prototypes
+
+//Returns socket
+int connect(char* hostname, int port);
+
+//Returns packet
+byte* makePacket(int sequenceNum, char* data, int byteCount);
+
+
+//No return needed?
+void udtSend(byte* packet);
+
+//returns success or failure
+int udtReceive(int expectedAck);
+
+
+
+
+
+
 #endif //_RDT_SEND_H
