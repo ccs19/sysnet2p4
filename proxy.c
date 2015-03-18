@@ -308,47 +308,10 @@ void ParseClientMessage(char* clientMessage,  struct sockaddr_in* clientAddress,
     char string[BUFFERSIZE]; //String to send back to client
     char token[BUFFERSIZE];  //Token to use for echo reply
     string[0] = '\0';
-    const int NUMLOADAVG = 3; //Number of load averages queries
     socklen_t clientAddressLength = sizeof(struct sockaddr_in);
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-    /*~~~~~~~~~~~~~~~~~~~~~Load avg response~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    if(strcmp(clientMessage, "<loadavg/>") == 0)
-    {
-        double loadavg[NUMLOADAVG];
-        getloadavg(loadavg, NUMLOADAVG); //Get load average and put in double array
-
-        //Begin string format:
-        strcat(string, "<replyLoadAvg>");
-        for(i = 0; i < NUMLOADAVG; i++)
-        {
-            char tempAvg[BUFFERSIZE];
-            sprintf(tempAvg, "%lf:", loadavg[i]);
-            strcat(string, tempAvg);              //Append string to string we return to client
-        }
-        strcat(string, "</replyLoadAvg>\0"); //End of string
-    }
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-        /*~~~~~~~~~~~~~~~~~~~~~Echo response~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    else if ((XMLParser("<echo>", "</echo>", clientMessage, token, sizeof(token))) == 1)
-    {
-        //Set return echo string
-        strcat(string, "<reply>");
-        strcat(string, token);
-        strcat(string, "</reply>\0");
-    }
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-        /*~~~~~~~~~~~~~~~~~~~~~Shut down response~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    else if(strcmp(clientMessage, "<shutdown/>") == 0)
-    {
-        strcat(string, ServerShutdownMessage);
-    }
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-    else //Else we have an invalid format
-        strcat(string, "<error>unknown format</error>\0");
+    //Else we have an invalid format
     printf("Sending back %s\n\n", string);
     if(     (sendto(
             ServerSocket,                       //Client socket
