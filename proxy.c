@@ -19,38 +19,38 @@ int getPercent(const char * percentString);
 
 int main(int argc, const char* argv[])
 {
-    checkCommandLineArgs(argc);
+//    checkCommandLineArgs(argc);
+//
+//    char receivingHostname[MAX_HOSTNAME_LENGTH];
+//    int receivingPort = getReceivingPort(argv[2]);
+//    int lostPercent = getPercent(argv[3]);
+//    int delayedPercent = getPercent(argv[4]);
+//    int errorPercent = getPercent(argv[5]);
 
-    char receivingHostname[MAX_HOSTNAME_LENGTH];
-    int receivingPort = getReceivingPort(argv[2]);
-    int lostPercent = getPercent(argv[3]);
-    int delayedPercent = getPercent(argv[4]);
-    int errorPercent = getPercent(argv[5]);
+    int sockfd, n;
+    struct sockaddr_in servaddr, cliaddr;
+    socklen_t len;
+    char mesg[1000];
 
-        int sockfd, n;
-        struct sockaddr_in servaddr,cliaddr;
-        socklen_t len;
-        char mesg[1000];
+    sockfd=socket(AF_INET,SOCK_DGRAM,0);
 
-        sockfd=socket(AF_INET,SOCK_DGRAM,0);
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port=htons(50000);
+    bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-        memset(&servaddr, 0, sizeof(servaddr));
-        servaddr.sin_family = AF_INET;
-        servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
-        servaddr.sin_port=htons(50000);
-        bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
-
-        while (1)
-        {
-            len = sizeof(cliaddr);
-            n = recvfrom(sockfd,mesg,1000,0,(struct sockaddr *)&cliaddr,&len);
-            sendto(sockfd,mesg,n,0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
-            printf("-------------------------------------------------------\n");
-            mesg[n] = 0;
-            printf("Received the following:\n");
-            printf("%s",mesg);
-            printf("-------------------------------------------------------\n");
-        }
+    while (1)
+    {
+        len = sizeof(cliaddr);
+        n = recvfrom(sockfd, mesg, 1000,0, (struct sockaddr *)&cliaddr,&len);
+        sendto(sockfd, mesg, n, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
+        printf("-------------------------------------------------------\n");
+        mesg[n] = 0;
+        printf("Received the following:\n");
+        printf("%s",mesg);
+        printf("-------------------------------------------------------\n");
+    }
 
 
 
