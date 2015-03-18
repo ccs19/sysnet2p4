@@ -8,12 +8,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "rdtSender.h"
-#include "common.h"
-
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#include "common.h"
 #include "sender.h"
+#include "rdtSender.h"
 
 //Function prototypes
 int validatePort(int numberOfArgs, const char *proxyPortString, const char *programName);

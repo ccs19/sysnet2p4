@@ -9,6 +9,8 @@
 #ifndef _SYSNET2P4_COMMONDEFINITIONS_H_
 #define _SYSNET2P4_COMMONDEFINITIONS_H_
 
+typedef unsigned char byte;
+
 /*
  * The size of a segment in bytes.
  */
@@ -18,6 +20,11 @@ int SEGMENT_SIZE = 10;
  * Maximum length of a hostname
  */
 int MAX_HOSTNAME_LENGTH = 256;
+
+/*
+ * The size of a segment in bytes.
+ */
+int MAX_MESSAGE_SIZE = 256;
 
 /*
  * Checks if given port is a legal port number. Returns 1 if valid, 0 if invalid.

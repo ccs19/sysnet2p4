@@ -25,7 +25,7 @@ int sendMessage (char* desthost, int destPort, char* message);
 //Other function prototypes
 
 //Returns socket
-int connect(char* hostname, int port);
+int connectSocket(char* hostname, int port);
 
 //Returns packet
 byte* makePacket(int sequenceNum, char* data, int byteCount);

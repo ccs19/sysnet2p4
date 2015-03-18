@@ -19,8 +19,9 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include "rdtReceiver.h"
 #include "common.h"
+
+#include "rdtReceiver.h"
 
 //Globals
 int ServerSocket = 0;

@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include "common.h"
 
-//Function prototypes
+//Private function prototypes
 void checkCommandLineArgs(int numberOfArgs);
 int getReceivingPort(const char * portString);
+int getPercent(const char * percentString);
 
 int main(int argc, const char* argv[])
 {
