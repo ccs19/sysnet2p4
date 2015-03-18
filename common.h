@@ -16,6 +16,16 @@ typedef enum{
     ACK
 }Segment_type;
 
+typedef enum{
+    ZERO,
+    ONE
+}Sequence;
+
+typedef enum{
+    NO,
+    YES
+}Corrupt;
+
 /*
  * The size of a segment in bytes.
  */
