@@ -37,7 +37,4 @@ byte* ackPacket(int ackNum, char* data, int byteCount);
 //Sends the ack back
 int udtSend(byte* ackPacket);
 
-
-
-
 #endif //_RDT_RECEIVER_H

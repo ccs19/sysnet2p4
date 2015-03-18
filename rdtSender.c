@@ -12,7 +12,6 @@
 #include <netdb.h>
 
 #include "common.h"
-#include "sender.h"
 #include "rdtSender.h"
 
 //Private function prototypes
@@ -21,10 +20,49 @@ void validatePort(int numberOfArgs, int proxyPort, const char *programName);
 
 int main(int argc, const char* argv[])
 {
-//    int                sockfd;
-//    struct sockaddr_in servaddr;
+    //from UDPmain.c
+    int                sockfd;
+    struct sockaddr_in servaddr;
     char               response[MAX_MESSAGE_SIZE];
-    char               message[MAX_MESSAGE_SIZE];
+    char               message[256];
+
+    if (argc != 3) {
+        fprintf (stderr, "Usage: client <hostname> <portnum>\n");
+        exit (1);
+    }
+
+    // parse input parameter for port information
+    int portNum = atoi (argv[2]);
+
+    // create a streaming socket
+    sockfd = createSocket(argv[1], portNum, &servaddr);
+    if (sockfd < 0) {
+        exit (1);
+    }
+
+    printf ("Enter a message: ");
+    fflush(stdout);
+    fgets (message, 256, stdin);
+    // replace new line with null character
+    message[strlen(message)-1] = '\0';
+
+    // send request to server
+    //if (sendRequest (sockfd, "<echo>Hello, World!</echo>", &servaddr) < 0) {
+    if (sendRequest (sockfd, message, &servaddr) < 0) {
+        closeSocket (sockfd);
+        exit (1);
+    }
+
+    if (receiveResponse(sockfd, response, 256) < 0) {
+        closeSocket (sockfd);
+        exit (1);
+    }
+    closeSocket (sockfd);
+
+    // display response from server
+    printResponse(response);
+
+    /////
 
     const char * proxyHostname = argv[1];
     int proxyPort = atoi(argv[2]);
@@ -136,6 +174,8 @@ int getAndPrintHostName(int numberOfArgs, const char * proxyHostnameString, cons
     return portPort;
 }
 
+////////////////
+
 /*
  * Creates a datagram socket and connects to a server.
  *
@@ -146,13 +186,14 @@ int getAndPrintHostName(int numberOfArgs, const char * proxyHostnameString, cons
  *
  * return value - the socket identifier or a negative number indicating the error if a connection could not be established
  */
-int createSocket(const char * serverName, int port, struct sockaddr_in * dest)
+int createSocket(char * serverName, int port, struct sockaddr_in * dest)
 {
     /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
     int socketFD;
     struct hostent *hostptr;
     struct in_addr ipAddress;
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 
     if( (socketFD = socket(AF_INET, SOCK_DGRAM, 0) ) < 0)
     {
@@ -217,6 +258,7 @@ int receiveResponse(int socketFD, char * response, int size)
  * Prints the response to the screen in a formatted way.
  *
  * response - the server's response as an XML formatted string
+ *
  */
 void printResponse(char * response)
 {
@@ -235,3 +277,16 @@ int closeSocket(int socketFD)
     close(socketFD);
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -6,3 +6,5 @@ The amount of delay on the proxy server may as well be a constant, like 3 second
 Whether a delay occurs is random.
 A state machine is just a switch statement within a while loop.
 The proxy must be multithreaded so that it doesn't miss packets while it's doing stuff.
+
+Multithreading required when delay begins.
