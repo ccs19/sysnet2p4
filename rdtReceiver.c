@@ -6,11 +6,8 @@
  * This file implements the functions used by the RDT receiver.
  */
 
-
 #include <arpa/inet.h>
 #include <pthread.h>
-
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,17 +15,13 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>
-
 #include "common.h"
-
 #include "rdtReceiver.h"
 
 //Globals
 int ServerSocket = 0;
 struct hostent * HostByName = NULL;
 struct sockaddr_in ServerAddress;
-
-const char* ServerShutdownMessage = "Server shutting down...";
 
 //Function prototypes
 int validateAndPrintPort(int numberOfArgs, const char * nameOfProgram, const char * portString);
@@ -40,13 +33,7 @@ void DisplayServerInfo();
 void AcceptConnections();
 void DisplayInfo();
 void HandleClientRequests(struct sockaddr_in* clientAddress);
-int XMLParser(  const char* beginXml,
-        const char* endXml,
-        char* clientMessage,
-        char* token,
-        int tokenSize);
 void ParseClientMessage(char* clientMessage,  struct sockaddr_in* clientAddress, int clientSocket);
-
 
 int main(int argc, const char* argv[])
 {
@@ -210,7 +197,6 @@ void HandleClientRequests(struct sockaddr_in* clientAddress)
     ParseClientMessage(stringBuffer, clientAddress, length);
 }
 
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   DisplayInfo
     Displays the connection info of the server.
@@ -257,81 +243,8 @@ char * receiveMessage (int sockFD)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void ParseClientMessage(char* clientMessage,  struct sockaddr_in* clientAddress, int clientSocket)
 {
-    /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
-    int i = 0;
-    char string[SEGMENT_SIZE]; //String to send back to client
-    char token[SEGMENT_SIZE];  //Token to use for echo reply
-    string[0] = '\0';
-    const int NUMLOADAVG = 3; //Number of load averages queries
-    socklen_t clientAddressLength = sizeof(struct sockaddr_in);
-    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-    /*~~~~~~~~~~~~~~~~~~~~~Load avg response~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    if(strcmp(clientMessage, "<loadavg/>") == 0)
-    {
-        double loadavg[NUMLOADAVG];
-        getloadavg(loadavg, NUMLOADAVG); //Get load average and put in double array
-
-        //Begin string format:
-        strcat(string, "<replyLoadAvg>");
-        for(i = 0; i < NUMLOADAVG; i++)
-        {
-            char tempAvg[SEGMENT_SIZE];
-            sprintf(tempAvg, "%lf:", loadavg[i]);
-            strcat(string, tempAvg);              //Append string to string we return to client
-        }
-        strcat(string, "</replyLoadAvg>\0"); //End of string
-    }
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-        /*~~~~~~~~~~~~~~~~~~~~~Echo response~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    else if ((XMLParser("<echo>", "</echo>", clientMessage, token, sizeof(token))) == 1)
-    {
-        //Set return echo string
-        strcat(string, "<reply>");
-        strcat(string, token);
-        strcat(string, "</reply>\0");
-    }
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-        /*~~~~~~~~~~~~~~~~~~~~~Shut down response~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    else if(strcmp(clientMessage, "<shutdown/>") == 0)
-    {
-        strcat(string, ServerShutdownMessage);
-    }
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-    else //Else we have an invalid format
-        strcat(string, "<error>unknown format</error>\0");
-    printf("Sending back %s\n\n", string);
-    if(     (sendto(
-            ServerSocket,                       //Client socket
-            string,                             //String buffer to send to client
-            strlen(string),                     //Length of buffer
-            0,                                  //flags
-            (struct sockaddr*)clientAddress,    //Destination
-            clientAddressLength                 //Length of clientAddress
-
-    )) < 0) //If sendto fails
-        printf("Failed to send\n");
-    if(strcmp(string, ServerShutdownMessage) == 0) //If server shutdown message received
-    {
-        close(ServerSocket);
-        exit(1);
-    }
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*  FUNCTION: XMLParser
-    Parses an XML value and returns a token.
-    @param begin           --      The expected beginning of an XML expression
-    @param end             --      The expected ending of an XML expression
-    @param token           --      The token extracted from the expression
-    @param clientMessage   --      Message to parse
-    @param length          --      Size of token
-    @return                --      1 on success, 0 on failure, -1 if token is too large to fit
- */
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int XMLParser(  const char* beginXml,
         const char* endXml,
         char* clientMessage,

@@ -15,28 +15,59 @@
 #include "sender.h"
 #include "rdtSender.h"
 
-//Function prototypes
-int validatePort(int numberOfArgs, const char *proxyPortString, const char *programName);
+//Private function prototypes
+void getMessage(char * message);
+void validatePort(int numberOfArgs, int proxyPort, const char *programName);
 
 int main(int argc, const char* argv[])
 {
-    int                sockfd;
-    struct sockaddr_in servaddr;
-    char               response[SEGMENT_SIZE];
-    char               message[SEGMENT_SIZE];
+//    int                sockfd;
+//    struct sockaddr_in servaddr;
+    char               response[MAX_MESSAGE_SIZE];
+    char               message[MAX_MESSAGE_SIZE];
 
-    int portNum = validatePort(argc, argv[2], argv[0]);
+    const char * proxyHostname = argv[1];
+    int proxyPort = atoi(argv[2]);
+    validatePort(argc, proxyPort, argv[0]);
 
-    sockfd = createSocket(argv[1], portNum, &servaddr);
-    if (sockfd < 0) exit (1);
+    //state machine goes here
+    getMessage(&message[MAX_MESSAGE_SIZE]);
+    sendMessage(proxyHostname, proxyPort, message);
 
+    printResponse(response);
+    return 0;
+}
+
+void getMessage(char *message)
+{
     printf ("Enter a message: ");
     fflush(stdout);
-    fgets (message, SEGMENT_SIZE, stdin);
+    fgets (message, SEGMENT_SIZE - 1, stdin);
     // replace new line with null character
     message[strlen(message)-1] = '\0';
+}
 
-    if (sendRequest (sockfd, message, &servaddr) < 0)
+/*
+ * Sends a message to an RDT receiver on a specified host and port.
+ *
+ * destHost  - the name of the host on which the receiver runs
+ * destPort  - the number of the port on which the receiver listens
+ * message   - the entire text message to be sent to the receiver; the message is \0 terminated
+ *
+ * return 0, if no error; otherwise, a negative number indicating the error
+ */
+int sendMessage (char* desthost, int destPort, char* message)
+{
+    //1. sndpkt = makePacket(0, data, valid)
+    //2. udtSend(sndpkt)
+    //3. startTimer
+
+    struct sockaddr_in * dest = NULL;
+    int sockfd = createSocket(desthost, destPort, dest);
+    if (sockfd < 0) exit (1);
+    char * response = NULL;
+
+    if (sendRequest (sockfd, message, dest) < 0)
     {
         closeSocket (sockfd);
         exit (1);
@@ -47,20 +78,18 @@ int main(int argc, const char* argv[])
         closeSocket (sockfd);
         exit (1);
     }
-    closeSocket (sockfd);
 
-    // display response from server
     printResponse(response);
-
-//    exit(0);
-
-    //wait for :
-    // data to send - keyboard input
-    // timer to go off - handle timer event and arrival of ack with select() system call
-    // acks from network
+    closeSocket (sockfd);
 
     return 0;
 }
+
+
+//wait for :
+// data to send - keyboard input
+// timer to go off - handle timer event and arrival of ack with select() system call
+// acks from network
 
 /*
  * Checks that a command line argument is a valid integer port number. If valid, it is printed and returned.
@@ -69,7 +98,7 @@ int main(int argc, const char* argv[])
  * numberOfArgs    - number of command line args
  * inputString     - hopefully, a valid integer port number
  */
-int validatePort(int numberOfArgs, const char *proxyPortString, const char *programName)
+void validatePort(int numberOfArgs, int proxyPort, const char *programName)
 {
     if (numberOfArgs != 3)
     {
@@ -77,11 +106,7 @@ int validatePort(int numberOfArgs, const char *proxyPortString, const char *prog
         exit(1);
     }
 
-    int proxyPort = atoi(proxyPortString);
-
     if( !isValidPort(proxyPort) ) exit(1);
-
-    return proxyPort;
 }
 
 /*
@@ -112,20 +137,6 @@ int getAndPrintHostName(int numberOfArgs, const char * proxyHostnameString, cons
 }
 
 /*
- * Sends a message to an RDT receiver on a specified host and port.
- *
- * destHost  - the name of the host on which the receiver runs
- * destPort  - the number of the port on which the receiver listens
- * message   - the entire text message to be sent to the receiver; the message is \0 terminated
- *
- * return 0, if no error; otherwise, a negative number indicating the error
- */
-int sendMessage (char* desthost, int destPort, char* message)
-{
-    return 0;
-}
-
-/*
  * Creates a datagram socket and connects to a server.
  *
  * serverName - the ip address or hostname of the server given as a string
@@ -142,7 +153,6 @@ int createSocket(const char * serverName, int port, struct sockaddr_in * dest)
     struct hostent *hostptr;
     struct in_addr ipAddress;
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
 
     if( (socketFD = socket(AF_INET, SOCK_DGRAM, 0) ) < 0)
     {
@@ -207,7 +217,6 @@ int receiveResponse(int socketFD, char * response, int size)
  * Prints the response to the screen in a formatted way.
  *
  * response - the server's response as an XML formatted string
- *
  */
 void printResponse(char * response)
 {

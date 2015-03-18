@@ -1,11 +1,8 @@
-It is all right to use the same packet definition for data packets and ACKs.
-However, he didn't like the destination bit. But, he did want an isACK bit instead. if there will only be one kind of packet.
-
 The reason he didn't like the destination bit is because recvfrom() gives you the IP address.
-He thought terminating the data portion of the last fragment of a message with '\0' was a decent idea.
+He thought terminating the data portion of the last fragment of a message with '\0'
+was a decent idea.
 Select, since it is used for the timer and stuff is only for the sender.
-The amount of delay on the proxy server may as well be a constant, like 3 seconds. Whether a delay occurs is random.
+The amount of delay on the proxy server may as well be a constant, like 3 seconds.
+Whether a delay occurs is random.
 A state machine is just a switch statement within a while loop.
 The proxy must be multithreaded so that it doesn't miss packets while it's doing stuff.
-We can modify his headers, but his functions are the required entry points.
-No globals. Period.
