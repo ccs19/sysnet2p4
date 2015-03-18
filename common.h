@@ -26,6 +26,11 @@ typedef enum{
     YES
 }Corrupt;
 
+typedef struct {
+    byte HEADER;
+    byte body[9];
+}Segment;
+
 /*
  * The size of a segment in bytes.
  */

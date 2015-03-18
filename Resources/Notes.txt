@@ -1,9 +1,6 @@
 It is all right to use the same packet definition for data packets and ACKs.
 However, he didn't like the destination bit. But, he did want an isACK bit instead. if there will only be one kind of packet.
-That works for me. It can be used for the same purpose but is even more explicit. That would make the header for our packets:
-SEQ
-isCorrupt
-isACK
+
 The reason he didn't like the destination bit is because recvfrom() gives you the IP address.
 He thought terminating the data portion of the last fragment of a message with '\0' was a decent idea.
 Select, since it is used for the timer and stuff is only for the sender.
