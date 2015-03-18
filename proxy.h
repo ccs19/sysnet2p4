@@ -1,13 +1,6 @@
 #ifndef _PROXY_H
 #define _PROXY_H
 
-
-typedef enum{
-RECEIVER,
-SENDER
-}Destination;
-
-
 //Receives a packet
 byte* receivePacket();
 

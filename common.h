@@ -11,6 +11,11 @@
 
 typedef unsigned char byte;
 
+typedef enum{
+    DATA,
+    ACK
+}Segment_type;
+
 /*
  * The size of a segment in bytes.
  */
