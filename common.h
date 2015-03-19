@@ -11,6 +11,33 @@
 
 typedef unsigned char byte;
 
+
+#define SEQUENCE_BIT 0
+#define CORRUPT_BIT 1
+#define ACK_BIT 2
+//Returns sequence bit value
+#define getSequenceBit(packet) ((packet >> SEQUENCE_BIT) & 1) ? 1 : 0
+
+//Set sequence bit
+//params: Byte, val
+#define setSequenceBit(packet, val) packet |= val << SEQUENCE_BIT
+
+//Set corrupt bit
+//params: Byte to set, value
+#define setCorruptBit(packet, val) packet |= val << CORRUPT_BIT
+
+//Returns corrupt bit value
+#define getCorruptBit(packet) ((packet >> CORRUPT_BIT) & 1) ? 1 : 0
+
+//Set ACK bit
+#define setAckBit(packet, val) packet |= val << ACK_BIT
+
+//Get ACK Bit
+#define getAckBit(packet) ((packet >> ACK_BIT) & 1) ? 1 : 0
+
+
+
+
 typedef enum{
     DATA,
     ACK
