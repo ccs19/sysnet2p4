@@ -41,11 +41,6 @@ void checkCommandLineArgs(int numberOfArgs);
 int getReceivingPort(const char * portString);
 int getPercent(const char * percentString);
 
-int XMLParser(  const char* beginXml,
-        const char* endXml,
-        char* clientMessage,
-        char* token,
-        int tokenSize);
 
 int main(int argc, const char* argv[])
 {
@@ -245,18 +240,7 @@ void AcceptConnections()
     }
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*  FUNCTION:   ExitOnError
-    Prints a message to stdout and exits
-    @param  errorMessage           -- Error message to be printed
-    @return                        -- void
- */
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void ExitOnError(char* errorMessage)
-{
-    printf("%s\n", errorMessage);
-    exit(1);
-}
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   HandleClientRequests
@@ -293,88 +277,3 @@ void HandleClientRequests(struct sockaddr_in* clientAddress)
     ParseClientMessage(stringBuffer, clientAddress, length);
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*  FUNCTION:   ParseClientMessage
-    Handles the message for the client and sends a message back to the client
-    @param  clientMessage        -- Pointer to message received by client
-    @param  ClientSocket         -- The socket to the client
-    @return                      -- void
- */
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void ParseClientMessage(char* clientMessage,  struct sockaddr_in* clientAddress, int clientSocket)
-{
-    /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
-    int i = 0;
-    char string[BUFFERSIZE]; //String to send back to client
-    char token[BUFFERSIZE];  //Token to use for echo reply
-    string[0] = '\0';
-    socklen_t clientAddressLength = sizeof(struct sockaddr_in);
-    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-    //Else we have an invalid format
-    printf("Sending back %s\n\n", string);
-    if(     (sendto(
-            ServerSocket,                       //Client socket
-            string,                             //String buffer to send to client
-            strlen(string),                     //Length of buffer
-            0,                                  //flags
-            (struct sockaddr*)clientAddress,    //Destination
-            clientAddressLength                 //Length of clientAddress
-
-    )) < 0) //If sendto fails
-        printf("Failed to send\n");
-    if(strcmp(string, ServerShutdownMessage) == 0) //If server shutdown message received
-    {
-        close(ServerSocket);
-        exit(1);
-    }
-}
-
-int XMLParser(  const char* beginXml,
-        const char* endXml,
-        char* clientMessage,
-        char* token,
-        int tokenSize)
-{
-    //~~~~~~~~~~~~~Local vars ~~~~~~~~~~~~~~~~~~~~~~~//
-    char tempString[strlen(clientMessage)];
-    char *delimiter = NULL;
-    int returnVal = 0;
-    int i = 0;
-    int foundDelimiter = 0;
-    int beginXmlLength = strlen(beginXml);
-    int endXmlLength = strlen(endXml);
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-    token[0] = '\0';
-    memcpy(tempString, clientMessage, beginXmlLength); //Copy first part of clientMessage into temp for comparison.
-    tempString[beginXmlLength] = '\0';
-    if(strcmp(tempString, beginXml) == 0 ) //If beginXml is found
-    {
-        memcpy(tempString, clientMessage, strlen(clientMessage)); //Copy entire clientMessage
-        for(i = 1; i < strlen(clientMessage); i++) //Check for valid delimiter here
-        {
-            if(tempString[i] == '<')
-            {
-                delimiter = tempString+i;//Potential valid delimiter found. Point delimiter ptr to location.
-                foundDelimiter = 1;
-                break;
-            }
-        }
-        if(foundDelimiter)
-        {
-            delimiter[endXmlLength] = '\0';//Set end of delimiter to null
-            if (strcmp(delimiter, endXml) != 0) //If invalid delimiter
-                returnVal = 0;
-            else {
-                returnVal = 1;//Set valid return
-                char *tempToken = clientMessage + (strlen(beginXml)); //Set temporary token to end of starting delimiter
-                strtok(tempToken, "<");
-                if (strlen(tempToken) > tokenSize) returnVal = -1;              //If token is too large, return -1
-                else if (strcmp(tempToken, endXml) == 0) token[0] = '\0';       //Else if empty token found
-                else strcat(token, tempToken);                                  //Else put extracted token in variable
-            }
-        }
-    }
-    return returnVal;
-}

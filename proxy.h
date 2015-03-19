@@ -3,6 +3,14 @@
 
 #include <sys/types.h>
 
+typedef struct{
+    int lostPacketChance;
+    int delayPacketChance;
+    int errorPacketChance;
+    //TODO add sender and receiver info
+}ProxyInfo;
+
+
 //Receives a packet
 byte* receivePacket();
 
