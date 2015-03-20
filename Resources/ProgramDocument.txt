@@ -1,4 +1,0 @@
-The program document must describe briefly the respective algorithms of the sender, receiver, and proxy and the format
-of messages send between the three peers.
-
-The document must also describe the protocols used by the system to make it work.

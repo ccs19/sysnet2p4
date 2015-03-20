@@ -238,7 +238,7 @@ void ExitOnError(char* errorMessage)
 void ForwardToReceiver(ProxyInfo* pInfo, char* message) {
     socklen_t destSize = sizeof(struct sockaddr_in);
     int size = sendto(pInfo->proxySocket,message, strlen(message), 0, (struct sockaddr *)&pInfo->receiverAddress, destSize);
-    printf("Fowarding to receiver:");
+    printf("Forwarding to receiver:");
 }
 
 void InitReceiverInfo(ProxyInfo *pInfo, const char *receiverName, int receiverPort){
@@ -285,7 +285,14 @@ void ForwardToSender(ProxyInfo* pInfo){
             stringBuffer,                     //Buffer for message
             bufSize,             //Size of buffer
             0,                                //Flags
-            (struct sockaddr*)&pInfo->senderAddress,  //Sender info
+            (struct sockaddr*)&pInfo->receiverAddress,  //Receiver info
             &clientAddressLength              //Size of source address
     );
+
+    printf("Received %d bytes from receiver\n", length);
+
+    int size = sendto(pInfo->proxySocket,stringBuffer, strlen(stringBuffer), 0, (struct sockaddr *)&pInfo->senderAddress, clientAddressLength);
+    printf("Forwarding %d byteds to sender\n", size);
+
+
 }
