@@ -7,7 +7,13 @@ typedef struct{
     int lostPacketChance;
     int delayPacketChance;
     int errorPacketChance;
-    //TODO add sender and receiver info
+    int proxySocket;
+    int port;
+    struct sockaddr_in proxyAddress;
+    struct hostent *proxyInfo;
+    struct sockaddr_in senderAddress;
+    struct hostent *receiverInfo;
+    struct sockaddr_in receiverAddress;
 }ProxyInfo;
 
 
@@ -39,7 +45,7 @@ int getRandom();
     @return                -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void OpenSocket(int port);
+void OpenSocket(ProxyInfo*);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   InitAddressStruct
@@ -48,7 +54,7 @@ void OpenSocket(int port);
     @return                --  void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void InitAddressStruct(int port);
+void InitAddressStruct(ProxyInfo*);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   DisplayInfo
@@ -56,7 +62,7 @@ void InitAddressStruct(int port);
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void DisplayInfo();
+void DisplayInfo(ProxyInfo*);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   BindSocket
@@ -64,7 +70,7 @@ void DisplayInfo();
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void BindSocket();
+void BindSocket(ProxyInfo*);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   AcceptConnections
@@ -72,7 +78,7 @@ void BindSocket();
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void AcceptConnections();
+void AcceptConnections(ProxyInfo*);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   ExitOnError
@@ -91,7 +97,7 @@ void ExitOnError(char*);
     @return           -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HandleClientRequests(struct sockaddr_in*);
+void HandleClientRequests(ProxyInfo*);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION:   ParseClientMessage
@@ -101,7 +107,7 @@ void HandleClientRequests(struct sockaddr_in*);
     @return                      -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void ParseClientMessage(char*, struct sockaddr_in*, int);
+void ParseClientMessage(char*, ProxyInfo*, int);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  FUNCTION: XMLParser
@@ -116,5 +122,11 @@ void ParseClientMessage(char*, struct sockaddr_in*, int);
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int XMLParser(const char*, const char*, char*, char*, int);
 
+
+void ForwardToReceiver(ProxyInfo*, char*);
+
+void ForwardToSender(ProxyInfo*);
+
+void InitReceiverInfo(ProxyInfo *pInfo, const char *, int);
 
 #endif

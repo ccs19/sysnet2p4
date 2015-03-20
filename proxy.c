@@ -30,17 +30,14 @@ struct sockaddr_in ServerAddress;
 
 //Constants
 const int HostNameMaxSize = 256;
-const int MAXLISTENERS = 5;
 const int BUFFERSIZE = 256;
 const int PORT_UNDEFINED = 99999;
 const int MAX_PORT = 65535;
-const char* ServerShutdownMessage = "Server shutting down...";
 
 //Private function prototypes
 void checkCommandLineArgs(int numberOfArgs);
 int getReceivingPort(const char * portString);
 int getPercent(const char * percentString);
-
 
 int main(int argc, const char* argv[])
 {
@@ -52,57 +49,12 @@ int main(int argc, const char* argv[])
 //    int delayedPercent = getPercent(argv[4]);
 //    int errorPercent = getPercent(argv[5]);
 
-    unsigned int port = PORT_UNDEFINED;
 
-    if(argc > 2)
-        printf("Usage:\n%s <optional:port to open>\n",argv[0]);
-    else if(argc == 1) //If no port specified
-        port = 0;
-    else if(atoi(argv[1]) <= 0 || atoi(argv[1]) > MAX_PORT) //Checking valid port bounds
-        printf("Invalid port number\n");
-    else
-    {
-        if (port == PORT_UNDEFINED) port = atoi(argv[1]); //If port specified at command line
-    }
-
-    if(port != PORT_UNDEFINED)
-    {
-        OpenSocket(port); //Open socket with port in arg vector 1
-        AcceptConnections();
-    }
-
-
-    //The Proxy also simulates slow packet transport within the network by delaying
-    // transport of a packet to its destination using a fixed time delay. This time
-    // delay should be between 1.5 and 2 times the waiting time for the sender to resend
-    // packets. To accurately simulate slow data transport, the process delaying the transport
-    // should be able to continue execution. This means that simply calling sleep() to delay
-    // sending a packet will block the process preventing it to accept any new packets or sending
-    // new packets. Instead, you need to create a new thread within the Proxy that will be tasked
-    // with sending the packet with some delay using sleep(). You must simulate the probability
-    // of a lost or delayed packet as some percentage such as 60%. The two separate parameters
-    // for specifying the delayed and lost packet probabilities must be accepted as an input
-    // parameter in main() to the Proxy.
-
-    //You will need to simulate damaged data using a tag in the packet to indicate that your packets
-    // are either free of error or corrupt – no checksum computation is needed. Randomly select the
-    // tag to be either corrupt or not corrupt in each packet including acknowledgments. Corrupt
-    // packets must also occur at a set percentage rate as above. Similarly, the percentage of
-    // corrupted packets must be accepted as an input parameter in main() to the Proxy, which
-    // handles the simulation of damaged data.
-
-
-    //simulate lost packets using the Proxy that delivers data to the Sender and Receiver.
-    // Random drop of packets is easily accomplished by using random numbers to decide when
-    // to drop a packet. The Proxy’s send function that is sending a packet to the receiver must
-    // use a random number to determine whether to call sendto() or not, to simulate a lost packet
-    // on the network.
-
-    //host name and port number of the receiver should be passed in as parameters to main()
-    //bind socket to a user-specified port and print the port number on the screen
-
-    //must use sleep() to test whether timer sender is working
-    //read select() man page and on eLearning
+    ProxyInfo *pInfo = malloc(sizeof(ProxyInfo));
+    pInfo->port = atoi(argv[1]);
+    InitReceiverInfo(pInfo, argv[1], atoi(argv[2]));
+    OpenSocket(pInfo); //Open socket with port in arg vector 1
+    AcceptConnections(pInfo);
 
     return 0;
 }
@@ -149,23 +101,20 @@ int getPercent(const char * percentString)
     @return                -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void OpenSocket(int port)
+void OpenSocket(ProxyInfo* pInfo)
 {
     char hostname[HostNameMaxSize];
-
-    if( ( ServerSocket =  socket(PF_INET, SOCK_DGRAM, 0) ) <  0)  //If socket fails
-        ExitOnError("Error creating socket");
 
     if(gethostname(hostname, sizeof(hostname)) < 0)               //If getting hostname fails
         ExitOnError("Error acquiring hostname. Exiting");
 
-    if( ( HostByName = gethostbyname(hostname) ) ==  NULL)        //If gethostbyname fails print error message, exit
+    if( ( pInfo->proxyInfo = gethostbyname(hostname) ) ==  NULL)        //If gethostbyname fails print error message, exit
     {
         herror("GetHostByName failed. Error: ");
         exit(1);
     }
-    InitAddressStruct(port);
-    BindSocket();
+    InitAddressStruct(pInfo);
+    BindSocket(pInfo);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -175,12 +124,12 @@ void OpenSocket(int port)
     @return                --  void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void InitAddressStruct(int port)
+void InitAddressStruct(ProxyInfo* pInfo)
 {
-    memset((void*)&ServerAddress, '0', (size_t)sizeof(ServerAddress));
-    ServerAddress.sin_family = AF_INET;
-    memcpy( (void *)&ServerAddress.sin_addr, (void *)HostByName->h_addr, HostByName->h_length);
-    ServerAddress.sin_port = htons(port);
+    memset((void*)&pInfo->proxyAddress, '0', (size_t)sizeof(pInfo->proxyAddress));
+    pInfo->proxyAddress.sin_family = AF_INET;
+    memcpy( (void *)&pInfo->proxyAddress.sin_addr, (void *)pInfo->proxyInfo->h_addr, pInfo->proxyInfo->h_length);
+    pInfo->proxyAddress.sin_port = htons(pInfo->port);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -189,18 +138,18 @@ void InitAddressStruct(int port)
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void DisplayInfo()
+void DisplayInfo(ProxyInfo* pInfo)
 {
     int i = 0;
     struct in_addr ipAddress;
     struct sockaddr_in sockIn;
     int sockLen = sizeof(sockLen);
-    getsockname(ServerSocket, (struct sockaddr*)&sockIn, (socklen_t*)&sockLen );
-    printf("Host Name: %s\n",HostByName->h_name);
+    getsockname(pInfo->proxySocket, (struct sockaddr*)&sockIn, (socklen_t*)&sockLen );
+    printf("Host Name: %s\n",pInfo->proxyInfo->h_name);
     printf("IP:        ");
-    while(HostByName->h_addr_list[i] != 0)
+    while(pInfo->proxyInfo->h_addr_list[i] != 0)
     {
-        ipAddress.s_addr = *(u_long*)HostByName->h_addr_list[i++];
+        ipAddress.s_addr = *(u_long*)pInfo->proxyInfo->h_addr_list[i++];
         printf("%s\n", inet_ntoa(ipAddress));
     }
     printf("Port:      %d\n", htons(sockIn.sin_port));
@@ -213,9 +162,9 @@ void DisplayInfo()
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void BindSocket()
+void BindSocket(ProxyInfo* pInfo)
 {
-    if( ( bind( ServerSocket, (struct sockaddr *) &ServerAddress, sizeof(ServerAddress)) )  < 0)
+    if( ( bind( pInfo->proxySocket, (struct sockaddr *) &pInfo->proxyAddress, sizeof(pInfo->proxyAddress)) )  < 0)
         ExitOnError("Failed to bind socket"); //If binding of socket fails
 }
 
@@ -225,18 +174,17 @@ void BindSocket()
     @return           --    void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void AcceptConnections()
+void AcceptConnections(ProxyInfo* pInfo)
 {
     /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
-    struct sockaddr_in clientAddress;
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-    DisplayInfo();
+    DisplayInfo(pInfo);
     printf("Waiting for connection... ");
     fflush(stdout);
     for(;;)
     {
-        HandleClientRequests(&clientAddress);
+        HandleClientRequests(pInfo);
     }
 }
 
@@ -250,7 +198,7 @@ void AcceptConnections()
     @return           -- void
  */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HandleClientRequests(struct sockaddr_in* clientAddress)
+void HandleClientRequests(ProxyInfo* pInfo)
 {
     fflush(stdout);
     /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
@@ -262,18 +210,82 @@ void HandleClientRequests(struct sockaddr_in* clientAddress)
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     fflush(stdout);
     length = recvfrom(
-            ServerSocket,                     //Server socket
+            pInfo->proxySocket,                     //Server socket
             stringBuffer,                     //Buffer for message
             bufSize,             //Size of buffer
             0,                                //Flags
-            (struct sockaddr*)clientAddress,  //Source address
+            (struct sockaddr*)&pInfo->senderAddress,  //Sender info
             &clientAddressLength              //Size of source address
     );
-    stringBuffer[length] = '\0';
-    puts("");
-    printf("Client IP: %s\n", inet_ntoa(clientAddress->sin_addr));
-//    printf("Client port: %hu\n", ntohs(clientAddress->sin_port));
-    printf("Received message: %s\n", stringBuffer);
-    ParseClientMessage(stringBuffer, clientAddress, length);
+    ForwardToReceiver(pInfo, stringBuffer);
+    ForwardToSender(pInfo);
 }
 
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*  FUNCTION:   ExitOnError
+    Prints a message to stdout and exits
+    @param  errorMessage           -- Error message to be printed
+    @return                        -- void
+ */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+void ExitOnError(char* errorMessage)
+{
+    printf("%s\n", errorMessage);
+    exit(1);
+}
+
+void ForwardToReceiver(ProxyInfo* pInfo, char* message) {
+    socklen_t destSize = sizeof(struct sockaddr_in);
+    int size = sendto(pInfo->proxySocket,message, strlen(message), 0, (struct sockaddr *)&pInfo->receiverAddress, destSize);
+    printf("Fowarding to receiver:");
+}
+
+void InitReceiverInfo(ProxyInfo *pInfo, const char *receiverName, int receiverPort){
+
+    struct in_addr receiverIp;
+
+    if( ( pInfo->proxySocket =  socket(AF_INET, SOCK_DGRAM, 0) ) <  0)  //If socket fails
+        ExitOnError("Error creating socket");
+
+    if( (pInfo->receiverInfo = gethostbyname(receiverName) ) == NULL)
+    {
+        perror("gethostbyname() failed to get receiver info, exit\n");
+        exit(1);
+    }
+
+    int i=0;
+    printf("\nIP: " );
+    while(pInfo->receiverInfo->h_addr_list[i] != 0)
+    {
+        receiverIp.s_addr = *(u_long*)pInfo->receiverInfo->h_addr_list[i++];
+        printf("%s\n", inet_ntoa(receiverIp));
+    }
+
+    memset((void*)&pInfo->receiverAddress, 0, sizeof(struct sockaddr_in));    /* zero the struct */
+    pInfo->receiverAddress.sin_family = AF_INET;
+    memcpy( (void *)&pInfo->receiverAddress.sin_addr, (void *)pInfo->receiverInfo->h_addr, pInfo->receiverInfo->h_length);
+    pInfo->receiverAddress.sin_port = htons( (u_short)receiverPort );        /* set destination port number */
+    printf("port: %d\n", htons(pInfo->receiverAddress.sin_port));
+
+}
+
+void ForwardToSender(ProxyInfo* pInfo){
+    fflush(stdout);
+    /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
+    char stringBuffer[BUFFERSIZE];
+    bzero(stringBuffer, BUFFERSIZE);
+    socklen_t clientAddressLength = sizeof(struct sockaddr_in);
+    socklen_t bufSize = BUFFERSIZE;
+    int length;
+    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    fflush(stdout);
+    length = recvfrom(
+            pInfo->proxySocket,                     //Server socket
+            stringBuffer,                     //Buffer for message
+            bufSize,             //Size of buffer
+            0,                                //Flags
+            (struct sockaddr*)&pInfo->senderAddress,  //Sender info
+            &clientAddressLength              //Size of source address
+    );
+}
