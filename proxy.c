@@ -200,25 +200,10 @@ void AcceptConnections(ProxyInfo* pInfo)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void HandleClientRequests(ProxyInfo* pInfo)
 {
-    fflush(stdout);
-    /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
-    char stringBuffer[BUFFERSIZE];
-    bzero(stringBuffer, BUFFERSIZE);
-    socklen_t clientAddressLength = sizeof(struct sockaddr_in);
-    socklen_t bufSize = BUFFERSIZE;
-    int length;
-    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    fflush(stdout);
-    length = recvfrom(
-            pInfo->proxySocket,                     //Server socket
-            stringBuffer,                     //Buffer for message
-            bufSize,             //Size of buffer
-            0,                                //Flags
-            (struct sockaddr*)&pInfo->senderAddress,  //Sender info
-            &clientAddressLength              //Size of source address
-    );
-    ForwardToReceiver(pInfo, stringBuffer);
-    ForwardToSender(pInfo);
+
+    pthread_t forwardReceiverThread, forwardSenderThread;
+    pthread_create(&forwardReceiverThread, NULL, (void*)ForwardToReceiver, (void*)pInfo);
+    pthread_create(&forwardSenderThread, NULL, (void*)ForwardToSender, (void*)pInfo);
 }
 
 
@@ -235,10 +220,33 @@ void ExitOnError(char* errorMessage)
     exit(1);
 }
 
-void ForwardToReceiver(ProxyInfo* pInfo, char* message) {
-    socklen_t destSize = sizeof(struct sockaddr_in);
-    int size = sendto(pInfo->proxySocket,message, strlen(message), 0, (struct sockaddr *)&pInfo->receiverAddress, destSize);
-    printf("Forwarding to receiver:");
+void ForwardToReceiver(void* proxyInfo) {
+
+    ProxyInfo *pInfo = (ProxyInfo*)proxyInfo;
+
+    while(1) {
+        fflush(stdout);
+        /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
+        char stringBuffer[BUFFERSIZE];
+        bzero(stringBuffer, BUFFERSIZE);
+        socklen_t clientAddressLength = sizeof(struct sockaddr_in);
+        socklen_t bufSize = BUFFERSIZE;
+        int length;
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        fflush(stdout);
+        length = recvfrom(
+                pInfo->proxySocket,                     //Server socket
+                stringBuffer,                     //Buffer for message
+                bufSize,             //Size of buffer
+                0,                                //Flags
+                (struct sockaddr *) &pInfo->senderAddress,  //Sender info
+                &clientAddressLength              //Size of source address
+        );
+
+        socklen_t destSize = sizeof(struct sockaddr_in);
+        int size = sendto(pInfo->proxySocket, stringBuffer, strlen(stringBuffer), 0, (struct sockaddr *) &pInfo->receiverAddress, destSize);
+        printf("Forwarding to receiver:");
+    }
 }
 
 void InitReceiverInfo(ProxyInfo *pInfo, const char *receiverName, int receiverPort){
@@ -270,29 +278,33 @@ void InitReceiverInfo(ProxyInfo *pInfo, const char *receiverName, int receiverPo
 
 }
 
-void ForwardToSender(ProxyInfo* pInfo){
-    fflush(stdout);
-    /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
-    char stringBuffer[BUFFERSIZE];
-    bzero(stringBuffer, BUFFERSIZE);
-    socklen_t clientAddressLength = sizeof(struct sockaddr_in);
-    socklen_t bufSize = BUFFERSIZE;
-    int length;
-    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-    fflush(stdout);
-    length = recvfrom(
-            pInfo->proxySocket,                     //Server socket
-            stringBuffer,                     //Buffer for message
-            bufSize,             //Size of buffer
-            0,                                //Flags
-            (struct sockaddr*)&pInfo->receiverAddress,  //Receiver info
-            &clientAddressLength              //Size of source address
-    );
+void ForwardToSender(void* proxyInfo){
 
-    printf("Received %d bytes from receiver\n", length);
+    while(1) {
+        ProxyInfo *pInfo = (ProxyInfo *) proxyInfo;
 
-    int size = sendto(pInfo->proxySocket,stringBuffer, strlen(stringBuffer), 0, (struct sockaddr *)&pInfo->senderAddress, clientAddressLength);
-    printf("Forwarding %d byteds to sender\n", size);
+        fflush(stdout);
+        /*~~~~~~~~~~~~~~~~~~~~~Local vars~~~~~~~~~~~~~~~~~~~~~*/
+        char stringBuffer[BUFFERSIZE];
+        bzero(stringBuffer, BUFFERSIZE);
+        socklen_t clientAddressLength = sizeof(struct sockaddr_in);
+        socklen_t bufSize = BUFFERSIZE;
+        int length;
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        fflush(stdout);
+        length = recvfrom(
+                pInfo->proxySocket,                     //Server socket
+                stringBuffer,                     //Buffer for message
+                bufSize,             //Size of buffer
+                0,                                //Flags
+                (struct sockaddr *) &pInfo->receiverAddress,  //Receiver info
+                &clientAddressLength              //Size of source address
+        );
 
+        printf("Received %d bytes from receiver\n", length);
 
+        int size = sendto(pInfo->proxySocket, stringBuffer, strlen(stringBuffer), 0, (struct sockaddr *) &pInfo->senderAddress, clientAddressLength);
+        printf("Forwarding %d byteds to sender\n", size);
+
+    }
 }

@@ -123,9 +123,9 @@ void ParseClientMessage(char*, ProxyInfo*, int);
 int XMLParser(const char*, const char*, char*, char*, int);
 
 
-void ForwardToReceiver(ProxyInfo*, char*);
+void ForwardToReceiver(void*);
 
-void ForwardToSender(ProxyInfo*);
+void ForwardToSender(void*);
 
 void InitReceiverInfo(ProxyInfo *pInfo, const char *, int);
 

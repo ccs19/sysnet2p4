@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(sysnet2p4)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pthread")
 
 set(SOURCE_FILES rdtSender.c common.c)
 add_executable(rdtSender ${SOURCE_FILES} )
